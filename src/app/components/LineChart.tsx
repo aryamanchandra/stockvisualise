@@ -11,9 +11,9 @@ interface LineChartProps {
 function LineChart({ stockString, setStockSymbol }: LineChartProps) {
   const [stock, setStock] = useState<any>();
   const [timeperiod, setTimePeriod] = useState("DAILY");
-  const [closingPrices, setClosingPrices] = useState();
-  const [volumes, setVolumes] = useState();
-  const [dates, setDates] = useState<any>();
+  // const [closingPrices, setClosingPrices] = useState();
+  // const [volumes, setVolumes] = useState();
+  // const [dates, setDates] = useState<any>();
 
   useEffect(() => {
     setStockSymbol(stockString);
@@ -24,11 +24,14 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
         const response = await axios.get(
           `https://www.alphavantage.co/query?function=TIME_SERIES_${timeperiod}&symbol=${stockString}&apikey=${API_KEY}`
         );
-        console.log(response);
         if (timeperiod == "DAILY") {
-          setStock(response.data[`Time Series (${timeperiod})`]);
+          setStock(response.data[`Time Series (Daily)`]);
+        } else if (timeperiod == "MONTHLY") {
+          setStock(response.data[`Monthly Time Series`]);
+        } else if (timeperiod == "WEEKLY") {
+          setStock(response.data[`Weekly Time Series`]);
         } else {
-          setStock(response.data[`${timeperiod} Time Series`]);
+          console.log("error");
         }
       } catch (error) {
         console.error("Error fetching stock data:", error);
@@ -37,18 +40,6 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
     if (stockString) {
       fetchStockData();
     }
-    const time = stock ? Object.keys(stock) : [];
-    setDates(time)
-    const closing: any = time.map((date) =>
-      parseFloat(stock[date]["4. close"] || 0)
-    );
-    setClosingPrices(closing);
-
-    const volume: any = time.map((date) =>
-      parseInt(stock[date]["5. volume"] || 0)
-    );
-
-    setVolumes(volume);
   }, [stockString, setStockSymbol, timeperiod]);
 
   const handleTime = (timeperiod: string) => {
@@ -62,6 +53,14 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
       console.log("error");
     }
   };
+
+  const dates = stock ? Object.keys(stock) : [];
+  const closingPrices: any = dates.map((date) =>
+    parseFloat(stock[date]["4. close"] || 0)
+  );
+  const volumes: any = dates.map((date) =>
+    parseInt(stock[date]["5. volume"] || 0)
+  );
 
   return (
     <Box>
