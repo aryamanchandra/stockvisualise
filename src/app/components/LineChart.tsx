@@ -1,20 +1,54 @@
-import React from 'react';
-import { Line } from 'react-chartjs-2';
+"use client"
+import React, { useState, useEffect } from "react";
+import Plot from "react-plotly.js";
+import axios from "axios";
 
-const LineChart = ({ data }:any) => {
-  const chartData = {
-    labels: data.timestamp.map((timestamp:any) => new Date(timestamp * 1000).toLocaleDateString()),
-    datasets: [
-      {
-        label: 'Stock Price',
-        data: data.close,
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      },
-    ],
-  };
+function LineChart() {
+  const [stock, setStock] = useState<any>();
+  const [stockSymbol, setStockSymbol] = useState<String>("AAPL");
 
-  return <Line data={chartData} />;
-};
+  useEffect(() => {
+    const fetchStockData = async () => {
+      try {
+        const API_KEY = "2Y1GEJVM1KB8PPG0";
+        const response = await axios.get(
+          `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${stockSymbol}&apikey=${API_KEY}`
+        );
+        setStock(response.data["Time Series (Daily)"]);
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      }
+    };
+
+    fetchStockData();
+  }, []);
+
+  const dates = stock ? Object.keys(stock) : [];
+  const closingPrices = dates.map((date) =>
+    parseFloat(stock[date]["4. close"] || 0)
+  );
+
+  return (
+    <center>
+      <h2>Stock Chart</h2>
+      <Plot
+        data={[
+          {
+            x: dates,
+            y: closingPrices,
+            type: "scatter",
+            mode: "lines+markers",
+            marker: { color: "blue" },
+          },
+        ]}
+        layout={{
+          width: 800,
+          height: 500,
+          title: "Stock Market Prices",
+        }}
+      />
+    </center>
+  );
+}
 
 export default LineChart;

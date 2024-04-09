@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://query1.finance.yahoo.com/v7/finance/spark';
+const API_BASE_URL = 'https://api.twelvedata.com';
 
 export const fetchStockData = async (symbol:any) => {
   try {
