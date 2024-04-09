@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Plot from "react-plotly.js";
 import axios from "axios";
-import { Box, Button, Stack } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import createPlotlyComponent from "react-plotly.js/factory";
+import { Plots } from "plotly.js";
 
 interface LineChartProps {
   stockString: string;
@@ -14,6 +16,10 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
   // const [closingPrices, setClosingPrices] = useState();
   // const [volumes, setVolumes] = useState();
   // const [dates, setDates] = useState<any>();
+
+  useEffect(() => {
+    Plots.resize("plotlyChart");
+  }, []);
 
   useEffect(() => {
     setStockSymbol(stockString);
@@ -64,7 +70,7 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", paddingTop: "40px" }}>
+      <Box sx={{ display: "flex", paddingTop: "40px", paddingBottom:"20px" }}>
         <Stack direction="row" spacing={2} sx={{ marginX: "auto" }}>
           <Button variant="outlined" onClick={() => handleTime("DAILY")}>
             Daily
@@ -78,8 +84,38 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
         </Stack>
       </Box>
       <center>
-        <h2>Stock Chart</h2>
+        <Typography variant="h5">CandleStick Chart</Typography>
         <Plot
+          divId="plotlyChart"
+          data={[
+            {
+              x: dates,
+              open: dates.map((date) =>
+                parseFloat(stock[date]["1. open"] || 0)
+              ),
+              close: dates.map((date) =>
+                parseFloat(stock[date]["4. close"] || 0)
+              ),
+              high: dates.map((date) =>
+                parseFloat(stock[date]["2. high"] || 0)
+              ),
+              low: dates.map((date) => parseFloat(stock[date]["3. low"] || 0)),
+              type: "candlestick",
+              increasing: { line: { color: "green" } },
+              decreasing: { line: { color: "red" } },
+            },
+          ]}
+          layout={{
+            // width: 800,
+            // height: 500,
+            title: `${stockString}`,
+          }}
+          useResizeHandler={true}
+          style={{ width: "80%", height: "50%" }}
+        />
+        <Typography variant="h5">Line Chart</Typography>
+        <Plot
+          divId="plotlyChart"
           data={[
             {
               x: dates,
@@ -92,14 +128,14 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
             },
           ]}
           layout={{
-            width: 800,
-            height: 500,
+            // width: 800,
+            // height: 500,
             title: `${stockString}`,
           }}
+          useResizeHandler={true}
+          style={{ width: "80%", height: "50%" }}
         />
-      </center>
-      <center>
-        <h2>Stock Volume Chart</h2>
+        <Typography variant="h5">Volume Chart</Typography>
         <Plot
           data={[
             {
@@ -112,8 +148,8 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
             },
           ]}
           layout={{
-            width: 800,
-            height: 500,
+            // width: 800,
+            // height: 500,
             title: "Stock Volume",
             xaxis: {
               title: "Date",
@@ -122,6 +158,8 @@ function LineChart({ stockString, setStockSymbol }: LineChartProps) {
               title: "Volume",
             },
           }}
+          useResizeHandler={true}
+          style={{ width: "80%", height: "auto" }}
         />
       </center>
     </Box>
